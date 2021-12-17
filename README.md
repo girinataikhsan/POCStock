@@ -1,1 +1,5 @@
-# POCStock
+1. Menurut saya salah satu penyebabnya bisa jadi adanya race condition pada saat promo 12.12. Maksudnya adalah semisal ada quota 2 untuk salah satu barang. Pada saat promo 12.12 ada 5 user yang melakukan checkout barang tersebut. Terjadilah race condition dimana ketika 5 user melakukan checkout bersamaan ketika di check di validasi awal untuk check stock masih tersisa 2 untuk ke 5 request tersebut. Akhirnya 5 request tersebut sama-sama diproses sehingga akhirnya stock menjadi minus.
+2. Untuk menghandle race condition ini salah satunya bisa menggunakan redis. Di redis kita bisa buat key untuk mereplikasi jumlah stock yang ada di database dengan disimpan ke key didalam redis. Ex. key ProdID-111 value nya 2. Ketika ada request datang maka service order akan melakukan DECRBY untuk key yang tadi sudah dibuat untuk melakukan validasi. Jika response nya kurang dari 0 maka request tersebut akan dibatalkan. Dan untuk menghandle apabila transaksi yang sudah berhasil lolos validasi ternyata gagal, stocknya bisa dikembalikan dengan INCRBY berdasarkan jumlah yang dibeli sebelumnya. Sehingga stock akan kembali tersedia.
+
+Untuk melakukan POC bisa jalankan test di repo stock :
+go test stock/app/repo/stock
